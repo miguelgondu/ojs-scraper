@@ -1,2 +1,2 @@
-def main() -> None:
-    print("Hello from ojs-scraper!")
+def hello() -> str:
+    return "Hello from bird-feeder!"
