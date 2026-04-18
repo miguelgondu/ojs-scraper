@@ -21,7 +21,7 @@ class IssueScraper:
     def scrape_links_for_articles(self) -> Iterable[Link]:
         article_tags = self.issue.select(f".{self.issue_a_tag_for_article__parent}")
 
-        article_view_pattern = r"/article/view/.[^/]+/?$"
+        article_view_pattern = r"/article/view/[A-Za-z0-9-_.]+/?$"
 
         # Extraer los links.
         for article_summary in article_tags:
