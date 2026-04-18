@@ -81,3 +81,7 @@ def test_scrape_links_for_articles_custom_tag(
         f"test.com/{article_id_one}",
         f"test.com/{article_id_two}",
     ]
+
+def test_scrape_links_no_articles():
+    scraper = get_mock_scraper("<div class='obj_article_summary'></div>")
+    assert list(scraper.scrape_links_for_articles()) == []
