@@ -22,6 +22,7 @@ class ArchiveScraper:
 
     def _fetch_all_archive_pages(self) -> Iterable[Link]:
         counter = 1
+        previous_page_text = None
         current_page_is_empty = False
         next_page_equals_current_page = False
         current_url = f"{self.base_url}/{counter}"
@@ -32,21 +33,21 @@ class ArchiveScraper:
         2. The next page is equal to the current page.
         """
         while not current_page_is_empty and not next_page_equals_current_page:
+            current_url = f"{self.base_url}/{counter}"
             current_page_soup = soupify(current_url)
+            current_page_text = current_page_soup.get_text()
 
             current_page_is_empty = (
                 current_page_soup.find(class_=self.a_tag_for_issue__parent) is None
             )
             if current_page_is_empty:
                 break
-
-            counter += 1
-            next_url = f"{self.base_url}/{counter}"
-            next_page = soupify(next_url)
-            next_page_equals_current_page = next_page.text == current_page_soup.text
+            if current_page_text == previous_page_text:
+                break
 
             yield current_url
-            current_url = next_url
+            previous_page_text = current_page_text
+            counter += 1
 
     def _extract_issues_from_archive_page(self, archive_soup: Archive) -> Iterable[str]:
         issue_summaries = archive_soup.find_all(
