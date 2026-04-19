@@ -41,12 +41,12 @@ class Scraper:
         self.registry = registry
 
         self.archive_config = archive_config
-        self.delay = self.compute_delay_from_robots(archive_config)
+        self.delay = self.compute_delay_from_robots()
 
-    def compute_delay_from_robots(self, archive_url: OJSArchiveConfig) -> int:
+    def compute_delay_from_robots(self) -> int:
         """Computes the delay from the robots.txt file of the archive URL."""
         # Parse the URL to extract the root domain
-        parsed_url = urlparse(archive_url.archive_url)
+        parsed_url = urlparse(self.archive_config.archive_url)
         robots_url = urlunparse(
             (
                 "https",
