@@ -63,41 +63,35 @@ def test_extract_metadata() -> None:
     }
 
 
-def test__find_tag_with_best_format_pick_xml() -> None:
-    minimal_html = """
-    <a class="obj_galley_link pdf" href="Test Link">PDF</a>
-    <a class="obj_galley_link html" href="Test Link">HTML</a>
-    <a class="obj_galley_link xml" href="Test Link">XML</a>
-    """
-    scraper = get_mock_scraper(minimal_html)
-    link_tags = scraper.article_soup.find_all(
-        attrs={"class": f"{scraper.article_galley_class}"}
-    )
-
-    best_tag = scraper._find_tag_with_best_format(link_tags)
-
-    assert best_tag[1] == ArticleFormat.XML
-
-
-def test__find_tag_with_best_format_pick_html() -> None:
-    minimal_html = """
-    <a class="obj_galley_link pdf" href="Test Link">PDF</a>
-    <a class="obj_galley_link html" href="Test Link">HTML</a>
-    """
-    scraper = get_mock_scraper(minimal_html)
-    link_tags = scraper.article_soup.find_all(
-        attrs={"class": f"{scraper.article_galley_class}"}
-    )
-
-    best_tag = scraper._find_tag_with_best_format(link_tags)
-
-    assert best_tag[1] == ArticleFormat.HTML
-
-
-def test__find_tag_with_best_format_pick_pdf() -> None:
-    minimal_html = """
+@pytest.mark.parametrize(
+    ("minimal_html", "expected_format"),
+    [
+        (
+            """
         <a class="obj_galley_link pdf" href="Test Link">PDF</a>
-    """
+        <a class="obj_galley_link html" href="Test Link">HTML</a>
+        <a class="obj_galley_link xml" href="Test Link">XML</a>
+        """,
+            ArticleFormat.XML,
+        ),
+        (
+            """
+        <a class="obj_galley_link pdf" href="Test Link">PDF</a>
+        <a class="obj_galley_link html" href="Test Link">HTML</a>
+        """,
+            ArticleFormat.HTML,
+        ),
+        (
+            """
+        <a class="obj_galley_link pdf" href="Test Link">PDF</a>
+        """,
+            ArticleFormat.PDF,
+        ),
+    ],
+)
+def test__find_tag_with_best_format_pick_expected_value(
+    minimal_html: str, expected_format: ArticleFormat
+) -> None:
     scraper = get_mock_scraper(minimal_html)
     link_tags = scraper.article_soup.find_all(
         attrs={"class": f"{scraper.article_galley_class}"}
@@ -105,7 +99,7 @@ def test__find_tag_with_best_format_pick_pdf() -> None:
 
     best_tag = scraper._find_tag_with_best_format(link_tags)
 
-    assert best_tag[1] == ArticleFormat.PDF
+    assert best_tag[1] == expected_format
 
 
 def test__find_tag_with_best_format_if_a_tag_is_contained_in_div() -> None:
