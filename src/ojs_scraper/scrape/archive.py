@@ -22,31 +22,30 @@ class ArchiveScraper:
 
     def _fetch_all_archive_pages(self) -> Iterable[Link]:
         counter = 1
+        previous_page_text = None
         current_page_is_empty = False
-        next_page_equals_current_page = False
         current_url = f"{self.base_url}/{counter}"
 
         """
-        There are two criteria for stopping:
+        There are three criteria for stopping:
         1. We find no issues in the current page.
         2. The next page is equal to the current page.
+        3. We add a limit to counter, just in case.
         """
-        while not current_page_is_empty and not next_page_equals_current_page:
+        while counter < 500:
+            current_url = f"{self.base_url}/{counter}"
             current_page_soup = soupify(current_url)
+            current_page_text = current_page_soup.get_text()
 
             current_page_is_empty = (
                 current_page_soup.find(class_=self.a_tag_for_issue__parent) is None
             )
-            if current_page_is_empty:
+            if current_page_is_empty or current_page_text == previous_page_text:
                 break
 
-            counter += 1
-            next_url = f"{self.base_url}/{counter}"
-            next_page = soupify(next_url)
-            next_page_equals_current_page = next_page.text == current_page_soup.text
-
             yield current_url
-            current_url = next_url
+            previous_page_text = current_page_text
+            counter += 1
 
     def _extract_issues_from_archive_page(self, archive_soup: Archive) -> Iterable[str]:
         issue_summaries = archive_soup.find_all(
@@ -57,14 +56,11 @@ class ArchiveScraper:
             if self.a_tag_for_issue__child is None:
                 # TODO: polish
                 link = div.find("a").get("href")  # type: ignore
-                if link is None:
-                    raise RuntimeError("a tag didn't have an href")
-                yield cast(str, link)
             else:
                 link = div.find("a", class_=self.a_tag_for_issue__child).get("href")  # type: ignore
-                if link is None:
-                    raise RuntimeError("a tag didn't have an href")
-                yield cast(str, link)
+            if link is None:
+                raise RuntimeError("a tag didn't have an href")
+            yield cast(str, link)
 
     def scrape_links_for_issues(self) -> Iterable[Link]:
         """An iterable over the issue links."""
