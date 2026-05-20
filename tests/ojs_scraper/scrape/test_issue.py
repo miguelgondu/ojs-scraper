@@ -24,7 +24,7 @@ def get_mock_html(
     article_id_one: str,
     article_id_two: str,
     issue_a_tag_for_article__parent: str = "obj_article_summary",
-):
+) -> str:
     return f"""
     <div class="{issue_a_tag_for_article__parent}">
         <a href="test.com/{article_id_one}">Article Title 1</a>
@@ -81,6 +81,7 @@ def test_scrape_links_for_articles_custom_tag(
         f"test.com/{article_id_one}",
         f"test.com/{article_id_two}",
     ]
+
 
 def test_scrape_links_no_articles():
     scraper = get_mock_scraper("<div class='obj_article_summary'></div>")

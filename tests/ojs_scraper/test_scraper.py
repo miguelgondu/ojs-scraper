@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock, patch
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open
 
 from ojs_scraper.scraper import Scraper
 
