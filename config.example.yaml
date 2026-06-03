@@ -1,0 +1,15 @@
+# ...
+archive_url: "https://revistas.unal.edu.co/index.php/idval/issue/archive"
+
+# ...
+issue_tags:
+  parent: "obj_issue_summary"
+  child: "title"
+
+# ...
+article_tags:
+  parent: "obj_article_summary"
+  child: "title"
+
+# ...
+article_galley: "obj_galley_link"

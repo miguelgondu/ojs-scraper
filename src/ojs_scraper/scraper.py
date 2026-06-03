@@ -1,8 +1,11 @@
 import logging
+from pathlib import Path
 from urllib.error import URLError
 from urllib.parse import urlparse, urlunparse
 from urllib.robotparser import RobotFileParser
 from warnings import filterwarnings
+
+import yaml
 
 from ojs_scraper.models.urls import OJSArchiveConfig
 from ojs_scraper.protocols.registry import RegistryProtocol
@@ -43,6 +46,20 @@ class Scraper:
         self.archive_config = archive_config
         self.delay = self.compute_delay_from_robots()
 
+    @classmethod
+    def from_yaml(
+        cls,
+        yaml_path: Path,
+        registry: RegistryProtocol,
+        headers: dict = DEFAULT_HEADERS,
+    ) -> "Scraper":
+        with yaml_path.open() as fp:
+            res = yaml.safe_load(fp)
+
+        archive_config = OJSArchiveConfig.model_validate(res)
+
+        return cls(archive_config, registry, headers)
+
     def compute_delay_from_robots(self) -> int:
         """Computes the delay from the robots.txt file of the archive URL."""
         # Parse the URL to extract the root domain
@@ -69,17 +86,18 @@ class Scraper:
         return int(robot_parser.crawl_delay("*") or 5)
 
     def scrape(self) -> None:
+        # TODO(miguel): change the names for a_tag_for_issue...
         archive_scraper = ArchiveScraper(
             base_url=self.archive_config.archive_url,
-            a_tag_for_issue__parent=self.archive_config.archive_a_tag_for_issue__parent,
-            a_tag_for_issue__child=self.archive_config.archive_a_tag_for_issue__child,
+            a_tag_for_issue__parent=self.archive_config.issue_tags.parent,
+            a_tag_for_issue__child=self.archive_config.issue_tags.child,
         )
 
         issue_links = archive_scraper.scrape_links_for_issues()
         for issue_link in issue_links:
             issue_scraper = IssueScraper(
                 issue_url=issue_link,
-                issue_a_tag_for_article__parent=self.archive_config.issue_a_tag_for_article__parent,
+                issue_a_tag_for_article__parent=self.archive_config.article_tags.parent,
             )
             article_links = issue_scraper.scrape_links_for_articles()
             for article_link in article_links:
