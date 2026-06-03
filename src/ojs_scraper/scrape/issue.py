@@ -1,10 +1,9 @@
+import re
 from collections.abc import Iterable
 from typing import cast
 
-import re
-
-from ojs_scraper.utils.types import Issue, Link
 from ojs_scraper.utils.soup import soupify
+from ojs_scraper.utils.types import Issue, Link
 
 
 class IssueScraper:
@@ -28,7 +27,7 @@ class IssueScraper:
             link_tags = article_summary.find_all("a")
 
             for link_tag in link_tags:
-                link = cast(str, link_tag.get("href", ""))  # type: ignore
+                link = cast("str", link_tag.get("href", ""))  # type: ignore
 
                 if link != "" and re.search(article_view_pattern, link):
                     yield link

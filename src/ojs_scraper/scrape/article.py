@@ -3,10 +3,9 @@ from typing import cast
 
 from bs4 import Tag
 
-from ojs_scraper.models.article import BaseArticle
-from ojs_scraper.utils.soup import soupify
+from ojs_scraper.models.article import ArticleFormat, BaseArticle
 from ojs_scraper.utils.constants import PREFERENCE_ORDER
-from ojs_scraper.models.article import ArticleFormat
+from ojs_scraper.utils.soup import soupify
 
 
 class ArticleScraper:
@@ -51,19 +50,20 @@ class ArticleScraper:
                 break
         else:
             raise ValueError(
-                f"None of the preferred formats {PREFERENCE_ORDER} found in article links. {[tag.get_text(strip=True) for tag in link_tags]}"
+                f"None of the preferred formats {PREFERENCE_ORDER} found in article "
+                f"links. {[tag.get_text(strip=True) for tag in link_tags]}"
             )
 
         if "href" not in article_tag.attrs:
             article_tag = article_tag.find("a")
 
-        return cast(Tag, article_tag), ArticleFormat(article_format.lower())
+        return cast("Tag", article_tag), ArticleFormat(article_format.lower())
 
     def scrape_article(self) -> BaseArticle:
         raw_metadata = self.extract_metadata()
 
         link_tags = cast(
-            list[Tag],
+            "list[Tag]",
             self.article_soup.find_all(attrs={"class": f"{self.article_galley_class}"}),
         )
 
@@ -71,7 +71,7 @@ class ArticleScraper:
 
         link_to_raw_file = article_tag["href"]
 
-        article = BaseArticle(
+        return BaseArticle(
             created_at=datetime.now(),
             journal=raw_metadata.get("DC.Source", None)
             or raw_metadata.get("citation_journal_title", ""),
@@ -79,7 +79,5 @@ class ArticleScraper:
             parsed=False,
             raw_metadata=raw_metadata,
             format=article_format,
-            url_to_raw_file=cast(str, link_to_raw_file),
+            url_to_raw_file=cast("str", link_to_raw_file),
         )
-
-        return article

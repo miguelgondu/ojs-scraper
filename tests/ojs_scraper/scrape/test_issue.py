@@ -1,23 +1,22 @@
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
-from hypothesis import given, strategies as st
+from hypothesis import given
+from hypothesis import strategies as st
+
 from ojs_scraper.scrape.issue import IssueScraper
 
 
 def get_mock_scraper(
     mock_html: str, issue_a_tag_for_article__parent: str | None = None
 ) -> IssueScraper:
-
     with patch("ojs_scraper.scrape.issue.soupify") as mock_soupify:
         mock_soupify.return_value = BeautifulSoup(mock_html, features="lxml")
 
-        scraper = IssueScraper(
+        return IssueScraper(
             issue_url="test.url",
             issue_a_tag_for_article__parent=issue_a_tag_for_article__parent,
         )
-
-        return scraper
 
 
 def get_mock_html(

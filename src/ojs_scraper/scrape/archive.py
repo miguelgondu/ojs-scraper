@@ -1,6 +1,6 @@
-from typing import cast
-from collections.abc import Iterable
 import logging
+from collections.abc import Iterable
+from typing import cast
 
 from ojs_scraper.utils.soup import soupify
 from ojs_scraper.utils.types import Archive, Link
@@ -60,7 +60,7 @@ class ArchiveScraper:
                 link = div.find("a", class_=self.a_tag_for_issue__child).get("href")  # type: ignore
             if link is None:
                 raise RuntimeError("a tag didn't have an href")
-            yield cast(str, link)
+            yield cast("str", link)
 
     def scrape_links_for_issues(self) -> Iterable[Link]:
         """An iterable over the issue links."""
