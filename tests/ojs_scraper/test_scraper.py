@@ -1,5 +1,4 @@
-from unittest.mock import MagicMock, patch
-from unittest.mock import mock_open
+from unittest.mock import MagicMock, mock_open, patch
 
 from ojs_scraper.scraper import Scraper
 
@@ -7,8 +6,7 @@ from ojs_scraper.scraper import Scraper
 def make_scraper() -> Scraper:
     config = MagicMock()
     config.archive_url = "test.url"
-    scraper = Scraper(archive_config=config, registry=MagicMock())
-    return scraper
+    return Scraper(archive_config=config, registry=MagicMock())
 
 
 def test_compute_delay_from_robots_returns_delay() -> None:

@@ -20,9 +20,37 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "hypothesis>=6.152.1",
+    "pre-commit>=4.6.0",
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
+    "ruff>=0.15.15",
 ]
 
 [tool.pytest.ini_options]
 pythonpath = "src"
+
+
+[tool.ruff]
+exclude = ["run", "examples", "setup", "data", "scripts"]
+
+[tool.ruff.lint]
+extend-select = [
+    "F",        # Pyflakes rules
+    "W",        # PyCodeStyle warnings
+    "E",        # PyCodeStyle errors
+    "I",        # Sort imports properly
+    "UP",       # Warn if certain things can changed due to newer Python versions
+    "C4",       # Catch incorrect use of comprehensions, dict, list, etc
+    "FA",       # Enforce from __future__ import annotations
+    "ISC",      # Good use of string concatenation
+    "ICN",      # Use common import conventions
+    "RET",      # Good return practices
+    "SIM",      # Common simplification rules
+    "TID",      # Some good import practices
+    "TC",       # Enforce importing certain types in a TYPE_CHECKING block
+    "PTH",      # Use pathlib instead of os.path
+    "NPY",      # Some numpy-specific things
+]
+ignore = [
+    "E741", # Do not use variables named 'l', 'O', or 'I'
+]

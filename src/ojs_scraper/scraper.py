@@ -1,19 +1,19 @@
+import logging
 from urllib.error import URLError
 from urllib.parse import urlparse, urlunparse
 from urllib.robotparser import RobotFileParser
 from warnings import filterwarnings
 
-import logging
-
 from ojs_scraper.models.urls import OJSArchiveConfig
 from ojs_scraper.protocols.registry import RegistryProtocol
 from ojs_scraper.scrape.archive import ArchiveScraper
-from ojs_scraper.scrape.issue import IssueScraper
 from ojs_scraper.scrape.article import ArticleScraper
+from ojs_scraper.scrape.issue import IssueScraper
 
 # Headers for requests
 DEFAULT_HEADERS = {
-    "User-Agent": "LatinAmericanPhilosophyMiningBot/1.0 (jloaiza@uahurtado.cl, miguelgondu@gmail.com, nicolas.duque@ucaldas.edu.co)",
+    "User-Agent": "LatinAmericanPhilosophyMiningBot/1.0 (jloaiza@uahurtado.cl, "
+    "miguelgondu@gmail.com, nicolas.duque@ucaldas.edu.co)",
 }
 
 logging.basicConfig(level=logging.INFO)

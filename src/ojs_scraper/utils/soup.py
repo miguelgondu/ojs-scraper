@@ -1,16 +1,14 @@
-# coding: utf-8
-
+import logging
+from time import sleep
 from warnings import filterwarnings
 
-import logging
 import requests
 from bs4 import BeautifulSoup
 
-from time import sleep
-
 # Headers for requests
 DEFAULT_HEADERS = {
-    "User-Agent": "LatinAmericanPhilosophyMiningBot/1.0 (jloaiza@uahurtado.cl, miguelgondu@gmail.com, nicolas.duque@ucaldas.edu.co)",
+    "User-Agent": "LatinAmericanPhilosophyMiningBot/1.0 (jloaiza@uahurtado.cl, "
+    "miguelgondu@gmail.com, nicolas.duque@ucaldas.edu.co)",
 }
 
 logging.basicConfig(level=logging.INFO)

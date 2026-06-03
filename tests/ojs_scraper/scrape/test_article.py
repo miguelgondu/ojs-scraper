@@ -1,23 +1,24 @@
-import pytest
+"""Unit tests for article."""
+
+# ruff: noqa: E501
 from unittest.mock import patch
 
+import pytest
 from bs4 import BeautifulSoup
+
+from ojs_scraper.models.article import ArticleFormat, BaseArticle
 from ojs_scraper.scrape.article import ArticleScraper
-from ojs_scraper.models.article import BaseArticle, ArticleFormat
 
 
 def get_mock_scraper(
     minimal_html: str, article_galley_class: str | None = None
 ) -> ArticleScraper:
-
     with patch("ojs_scraper.scrape.article.soupify") as mock_soupify:
         mock_soupify.return_value = BeautifulSoup(minimal_html, features="lxml")
 
-        scraper = ArticleScraper(
+        return ArticleScraper(
             article_url="test.url", article_galley_class=article_galley_class
         )
-
-        return scraper
 
 
 def test_scraper_with_default_article_galley_class() -> None:

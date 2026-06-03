@@ -1,9 +1,11 @@
 """Implements downloader classes to get files from the website."""
 
+from abc import abstractmethod
+
 import requests
 from bs4 import BeautifulSoup
-from abc import abstractmethod
-from ojs_scraper.registry import Registry, Format
+
+from ojs_scraper.registry import Format, Registry
 
 
 def soupify(url: str):
