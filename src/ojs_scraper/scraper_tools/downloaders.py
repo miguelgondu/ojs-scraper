@@ -1,11 +1,14 @@
 """Implements downloader classes to get files from the website."""
 
+import logging
 from abc import abstractmethod
 
 import requests
 from bs4 import BeautifulSoup
 
 from ojs_scraper.registry import Format, Registry
+
+logger = logging.getLogger(__name__)
 
 
 def soupify(url: str):
@@ -61,8 +64,8 @@ class HTMLDownloader(Downloader):
         id, raw_metadata = extract_metadata(article_soup)
 
         # Which article are we visiting?
-        print(f"Title: {raw_metadata['DC.Title']}")
-        print("Type: HTML")
+        logger.info("Title: %s", raw_metadata["DC.Title"])
+        logger.info("Type: HTML")
 
         article_html_data = article_soup.find("div", class_="textoCompleto").text
 
@@ -88,7 +91,7 @@ class PDFDownloader(Downloader):
         # We need to go back to the main article page to get the metadata.
 
         if not pdf_soup.find("a", class_="return"):
-            print("Couldn't go back for the metadata.")
+            logger.warning("Couldn't go back for the metadata in %s.", article_url)
             return
 
         article_link = pdf_soup.find("a", class_="return")["href"]
@@ -96,13 +99,15 @@ class PDFDownloader(Downloader):
 
         article_id, raw_metadata = extract_metadata(article_soup)
 
-        print(f"Title: {raw_metadata['DC.Title']}")
-        print("Type: PDF")
+        logger.info("Title: %s", raw_metadata["DC.Title"])
+        logger.info("Type: PDF")
 
         download_tag = pdf_soup.find("a", class_="download")
 
         if not download_tag:
-            print("Couldn't get where to download the pdf file from!")
+            logger.warning(
+                "Couldn't get where to download the pdf file from in %s!", article_url
+            )
             pdf = None
             format = None
         else:
