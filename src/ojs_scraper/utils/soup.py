@@ -11,7 +11,6 @@ DEFAULT_HEADERS = {
     "miguelgondu@gmail.com, nicolas.duque@ucaldas.edu.co)",
 }
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Ignore SSL warnings
