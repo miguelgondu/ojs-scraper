@@ -16,7 +16,6 @@ DEFAULT_HEADERS = {
     "miguelgondu@gmail.com, nicolas.duque@ucaldas.edu.co)",
 }
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Ignore SSL warnings
@@ -66,7 +65,10 @@ class Scraper:
             robot_parser.read()
 
         # Default to 5 seconds if not specified
-        return int(robot_parser.crawl_delay("*") or 5)
+        crawl_delay = int(robot_parser.crawl_delay("*") or 5)
+        logger.info("Scraping with a delay of %s", crawl_delay)
+
+        return crawl_delay
 
     def scrape(self) -> None:
         archive_scraper = ArchiveScraper(
@@ -75,14 +77,22 @@ class Scraper:
             a_tag_for_issue__child=self.archive_config.archive_a_tag_for_issue__child,
         )
 
+        logger.info(
+            "Scraping using the following configuration: %s",
+            self.archive_config,
+        )
+
         issue_links = archive_scraper.scrape_links_for_issues()
         for issue_link in issue_links:
+            logger.info("Finding all article links in %s", issue_link)
             issue_scraper = IssueScraper(
                 issue_url=issue_link,
                 issue_a_tag_for_article__parent=self.archive_config.issue_a_tag_for_article__parent,
             )
+
             article_links = issue_scraper.scrape_links_for_articles()
             for article_link in article_links:
+                logger.info("Scraping article from %s", issue_link)
                 art = ArticleScraper(
                     article_url=article_link,
                     article_galley_class=self.archive_config.article_galley_class,

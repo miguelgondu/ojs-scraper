@@ -1,9 +1,12 @@
+import logging
 import re
 from collections.abc import Iterable
 from typing import cast
 
 from ojs_scraper.utils.soup import soupify
 from ojs_scraper.utils.types import Issue, Link
+
+logger = logging.getLogger(__name__)
 
 
 class IssueScraper:
