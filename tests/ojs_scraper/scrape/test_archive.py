@@ -26,9 +26,9 @@ def test__fetch_all_archive_pages_one_valid_page() -> None:
 
 def test__fetch_all_archive_pages_multiple_valid_pages() -> None:
     pages = [
-        "<div class='issue_tag_parent'>...Valid page 1...</div>",
-        "<div class='issue_tag_parent'>...Valid page 2...</div>",
-        "<div class='issue_tag_parent'>...Valid page 3...</div>",
+        "<a href='test.url/issue/view/1234'>...Valid page 1...</a>",
+        "<a href='test.url/issue/view/1235'>...Valid page 2...</a>",
+        "<a href='test.url/issue/view/1236'>...Valid page 3...</a>",
         "",
     ]
     scraper = make_scraper()

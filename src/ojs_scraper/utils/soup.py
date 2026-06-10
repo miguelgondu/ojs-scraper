@@ -29,6 +29,4 @@ def soupify(url: str, retries: int = 5, sleep_time_seconds: int = 2) -> Beautifu
             logger.warning(f"Request to {url} failed: {e}. Retrying...")
             sleep(sleep_time_seconds)
 
-    raise RuntimeError(
-        f"Failed to retrieve content from {url} after {retries} retries."
-    )
+    return BeautifulSoup(response.content, features="lxml")
