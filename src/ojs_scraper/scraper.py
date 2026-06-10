@@ -115,4 +115,5 @@ class Scraper:
                     article_url=article_link,
                     article_galley_class=self.archive_config.article_galley_class,
                 ).scrape_article()
+                logger.info("Scraped article %s", art)
                 self.registry.create_article(art)
