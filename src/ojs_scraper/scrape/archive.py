@@ -33,6 +33,7 @@ class ArchiveScraper:
 
             if issue_pages.union(current_issue_links) > issue_pages:
                 issue_pages = issue_pages.union(current_issue_links)
+                logger.info("Visited and added %d links from %s", len(current_issue_links), current_url)
                 counter += 1
             else:
                 break
