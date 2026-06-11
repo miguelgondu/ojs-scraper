@@ -1,3 +1,4 @@
+import pytest
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
@@ -5,99 +6,71 @@ from bs4 import BeautifulSoup
 from ojs_scraper.scrape.archive import ArchiveScraper
 
 
-def make_soup_for_all_pages(pages: list[str]) -> list[BeautifulSoup]:
-    return [BeautifulSoup(page, features="lxml") for page in pages]
-
-
-def make_scraper(
-    a_tag_for_issue__child: str | None = "issue_tag_child",
-) -> ArchiveScraper:
-    return ArchiveScraper("test.url", "issue_tag_parent", a_tag_for_issue__child)
-
-
-def test__fetch_all_archive_pages_one_valid_page() -> None:
-    pages = ["<div class='issue_tag_parent'>...Valid page...</div>", ""]
-    scraper = make_scraper()
-    soups = make_soup_for_all_pages(pages)
+@pytest.mark.parametrize(
+    ("archive_pages", "expected_links"),
+    [
+        (
+            [
+                """
+                <a href='test.url/issue/view/123'>...Valid tag...</a>
+                <a href='test.url/issue/invalid-url'>...Invalid a tag with /issue/...</a>
+                <a href='test.url/invalid-url'>...Invalid a tag without /issue/...</a>
+                <a href=''>...Invalid a tag without href...</a>
+                """,
+                "",
+            ],
+            ["test.url/issue/view/123"],
+        ),
+        (
+            [
+                "<a href='test.url/issue/view/123'>...Valid tag...</a>",
+                "<a href='test.url/issue/view/123'>...Valid tag...</a><a href='test.url/issue/view/456'>...Valid tag...</a>",
+                "<a href='test.url/issue/view/456'>...Valid tag...</a>",
+            ],
+            ["test.url/issue/view/123", "test.url/issue/view/456"],
+        ),
+        (
+            [
+                "<a href='test.url/issue/view/123'>...Issue 1...</a>",
+                "",
+            ],
+            ["test.url/issue/view/123"],
+        ),
+        (
+            [
+                "<a href='test.url/issue/view/123'>...Valid archive page 1...</a>",
+                "<a href='test.url/issue/view/456'>...Valid archive page 2...</a>",
+                "<a href='test.url/issue/view/789'>...Valid archive page 3...</a>",
+                "",
+            ],
+            [
+                "test.url/issue/view/123",
+                "test.url/issue/view/456",
+                "test.url/issue/view/789",
+            ],
+        ),
+        (
+            [
+                "<a href='test.url/issue/view/123'>...Valid page 1...</a>",
+                "<a href='test.url/issue/view/456'>...Equal Page...</a>",
+                "<a href='test.url/issue/view/456'>...Equal Page...</a>",
+            ],
+            [
+                "test.url/issue/view/123",
+                "test.url/issue/view/456",
+            ],
+        ),
+        (
+            [""],
+            [],
+        ),
+    ],
+)
+def test_scrape_archive_pages(
+    archive_pages: list[str], expected_links: list[str]
+) -> None:
+    scraper = ArchiveScraper("test.url")
+    soups = [BeautifulSoup(page, features="lxml") for page in archive_pages]
     with patch("ojs_scraper.scrape.archive.soupify", side_effect=soups):
-        results = list(scraper._fetch_all_archive_pages())
-        assert results == ["test.url/1"]
-
-
-def test__fetch_all_archive_pages_multiple_valid_pages() -> None:
-    pages = [
-        "<a href='test.url/issue/view/1234'>...Valid page 1...</a>",
-        "<a href='test.url/issue/view/1235'>...Valid page 2...</a>",
-        "<a href='test.url/issue/view/1236'>...Valid page 3...</a>",
-        "",
-    ]
-    scraper = make_scraper()
-    soups = make_soup_for_all_pages(pages)
-    with patch("ojs_scraper.scrape.archive.soupify", side_effect=soups):
-        results = list(scraper._fetch_all_archive_pages())
-        assert results == ["test.url/1", "test.url/2", "test.url/3"]
-
-
-def test__fetch_all_archive_pages_stop_when_two_equal() -> None:
-    pages = [
-        "<div class='issue_tag_parent'>...Valid page 1...</div>",
-        "<div class='issue_tag_parent'>...Valid page 2...</div>",
-        "<div class='issue_tag_parent'>...Valid page 2...</div>",
-    ]
-    scraper = make_scraper()
-    soups = make_soup_for_all_pages(pages)
-    with patch("ojs_scraper.scrape.archive.soupify", side_effect=soups):
-        results = list(scraper._fetch_all_archive_pages())
-        assert results == ["test.url/1", "test.url/2"]
-
-
-def test__fetch_all_archive_pages_no_valid_pages() -> None:
-    pages = [""]
-    scraper = make_scraper()
-    soups = make_soup_for_all_pages(pages)
-    with patch("ojs_scraper.scrape.archive.soupify", side_effect=soups):
-        results = list(scraper._fetch_all_archive_pages())
-        assert results == []
-
-
-def test__extract_issues_from_archive_page_with_child_tag() -> None:
-    html = """
-        <div class="issue_tag_parent">
-            <a class="issue_tag_child" href="link-to-issue-1">Issue Title 1</a>
-        </div>
-        <div class="issue_tag_parent">
-            <a class="issue_tag_child" href="link-to-issue-2">Issue Title 2</a>
-        </div>
-        <div class="invalid_tag">
-            <a class="issue_tag_child" href="link-to-issue-3">Ignore this issue</a>
-        </div>
-        """
-    scraper = make_scraper()
-    soup = BeautifulSoup(html, features="lxml")
-    results = list(scraper._extract_issues_from_archive_page(soup))
-
-    assert results == ["link-to-issue-1", "link-to-issue-2"]
-
-
-def test__extract_issues_from_archive_page_without_child_tag() -> None:
-    html = """
-        <div class="issue_tag_parent">
-            <a href="link-to-issue-1">Issue Title 1</a>
-        </div>
-        <div class="issue_tag_parent">
-            <a href="link-to-issue-2">Issue Title 2</a>
-        </div>
-        <div class="invalid_tag">
-            <a href="link-to-issue-3">Ignore this issue</a>
-        </div>
-        """
-    soup = BeautifulSoup(html, features="lxml")
-    scraper = make_scraper(a_tag_for_issue__child=None)
-    results = list(scraper._extract_issues_from_archive_page(soup))
-
-    assert results == ["link-to-issue-1", "link-to-issue-2"]
-
-
-# Note: There is no test_scrape_links_for_issues because it just
-# combines the other private methods in the class we already
-# tested.
+        results = scraper.scrape_links_for_issues()
+        assert results.sort() == expected_links.sort()
