@@ -1,6 +1,6 @@
-import pytest
 from unittest.mock import patch
 
+import pytest
 from bs4 import BeautifulSoup
 
 from ojs_scraper.scrape.archive import ArchiveScraper
