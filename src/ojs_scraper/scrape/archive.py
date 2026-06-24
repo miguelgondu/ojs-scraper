@@ -1,5 +1,6 @@
 import logging
 import re
+from typing import cast
 
 from ojs_scraper.utils.soup import soupify
 from ojs_scraper.utils.types import Link
@@ -27,9 +28,11 @@ class ArchiveScraper:
             curent_issue_a_tags = current_page_soup.find_all(
                 "a", href=self.issue_view_pattern
             )
-            current_issue_links = set(
-                [link.get("href") for link in curent_issue_a_tags]
-            )
+            current_issue_links = {
+                cast("Link", link.get("href"))
+                for link in curent_issue_a_tags
+                if link.get("href")
+            }
 
             if issue_pages.union(current_issue_links) > issue_pages:
                 issue_pages = issue_pages.union(current_issue_links)

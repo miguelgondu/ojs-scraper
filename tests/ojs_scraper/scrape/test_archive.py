@@ -13,7 +13,7 @@ from ojs_scraper.scrape.archive import ArchiveScraper
             [
                 """
                 <a href='test.url/issue/view/123'>...Valid tag...</a>
-                <a href='test.url/issue/invalid-url'>...Invalid a tag with /issue/...</a>
+                <a href='test.url/issue/invalid-url'> Invalid a tag with /issue/ </a>
                 <a href='test.url/invalid-url'>...Invalid a tag without /issue/...</a>
                 <a href=''>...Invalid a tag without href...</a>
                 """,
@@ -24,7 +24,7 @@ from ojs_scraper.scrape.archive import ArchiveScraper
         (
             [
                 "<a href='test.url/issue/view/123'>...Valid tag...</a>",
-                "<a href='test.url/issue/view/123'>...Valid tag...</a><a href='test.url/issue/view/456'>...Valid tag...</a>",
+                "<a href='test.url/issue/view/123'>...Valid tag...</a><a href='test.url/issue/view/456'>...Valid tag...</a>",  # noqa: E501
                 "<a href='test.url/issue/view/456'>...Valid tag...</a>",
             ],
             ["test.url/issue/view/123", "test.url/issue/view/456"],
