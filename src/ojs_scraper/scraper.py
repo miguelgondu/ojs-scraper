@@ -9,9 +9,9 @@ import yaml
 
 from ojs_scraper.models.urls import OJSArchiveConfig
 from ojs_scraper.protocols.registry import RegistryProtocol
-from ojs_scraper.scrape.archive import ArchiveScraper
-from ojs_scraper.scrape.article import ArticleScraper
-from ojs_scraper.scrape.issue import IssueScraper
+from ojs_scraper.scrape.archive import scrape_archive
+from ojs_scraper.scrape.article import scrape_article
+from ojs_scraper.scrape.issue import scrape_issue
 
 # Headers for requests
 DEFAULT_HEADERS = {
@@ -89,31 +89,19 @@ class Scraper:
 
     def scrape(self) -> None:
         # TODO(miguel): change the names for a_tag_for_issue...
-        archive_scraper = ArchiveScraper(
-            base_url=self.archive_config.archive_url,
-            a_tag_for_issue__parent=self.archive_config.issue_tags.parent,
-            a_tag_for_issue__child=self.archive_config.issue_tags.child,
-        )
 
         logger.info(
             "Scraping using the following configuration: %s",
             self.archive_config,
         )
 
-        issue_links = archive_scraper.scrape_links_for_issues()
+        issue_links = scrape_archive(self.archive_config.archive_url)
         for issue_link in issue_links:
             logger.info("Finding all article links in %s", issue_link)
-            issue_scraper = IssueScraper(
-                issue_url=issue_link,
-                issue_a_tag_for_article__parent=self.archive_config.article_tags.parent,
-            )
+            article_links = scrape_issue(issue_link)
 
-            article_links = issue_scraper.scrape_links_for_articles()
             for article_link in article_links:
                 logger.info("Scraping article from %s", issue_link)
-                art = ArticleScraper(
-                    article_url=article_link,
-                    article_galley_class=self.archive_config.article_galley_class,
-                ).scrape_article()
+                art = scrape_article(article_link)
                 logger.info("Scraped article %s from journal %s", art.url, art.journal)
                 self.registry.create_article(art)
