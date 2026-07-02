@@ -2,8 +2,9 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 
 authors:
-- family-names: "González Duque"
+- family-names: "González-Duque"
   given-names: "Miguel"
+  orcid: https://orcid.org/0000-0001-8630-9487
 - family-names: "Acosta"
   given-names: "Dana"
 - family-names: "Duque"
