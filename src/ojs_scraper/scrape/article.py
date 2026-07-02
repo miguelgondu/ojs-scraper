@@ -6,7 +6,8 @@ from bs4 import BeautifulSoup, Tag
 
 from ojs_scraper.clients import ClientProtocol, SoupClient
 from ojs_scraper.models.article import ArticleFormat, BaseArticle
-from ojs_scraper.utils.constants import PREFERENCE_ORDER
+
+PREFERENCE_ORDER = ["xml", "html", "pdf"]
 
 
 def _extract_metadata(article_soup: BeautifulSoup) -> dict[str, str]:
