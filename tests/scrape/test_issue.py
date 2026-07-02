@@ -2,7 +2,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from ojs_scraper.scrape.issue import scrape_issue
-from tests.helpers import mock_soupify_with_html
+from tests.helpers.mocks import MockWithHTMLClient
 
 
 def get_mock_html(
@@ -41,8 +41,7 @@ def test_scrape_links_for_articles_default_tag(
 ) -> None:
     mock_html = get_mock_html(article_id_one, article_id_two)
 
-    with mock_soupify_with_html(mock_html):
-        resulting_links = scrape_issue("test.com")
+    resulting_links = scrape_issue("test.com", client=MockWithHTMLClient(mock_html))
 
     assert resulting_links == list(
         {
@@ -54,8 +53,6 @@ def test_scrape_links_for_articles_default_tag(
 
 def test_scrape_links_no_articles():
     mock_html = "<div class='obj_article_summary'></div>"
-
-    with mock_soupify_with_html(mock_html):
-        resulting_links = scrape_issue("test.com")
+    resulting_links = scrape_issue("test.com", client=MockWithHTMLClient(mock_html))
 
     assert resulting_links == []

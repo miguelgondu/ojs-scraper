@@ -4,9 +4,9 @@ from typing import cast
 
 from bs4 import BeautifulSoup, Tag
 
+from ojs_scraper.clients import ClientProtocol, SoupClient
 from ojs_scraper.models.article import ArticleFormat, BaseArticle
 from ojs_scraper.utils.constants import PREFERENCE_ORDER
-from ojs_scraper.utils.soup import soupify
 
 
 def _extract_metadata(article_soup: BeautifulSoup) -> dict[str, str]:
@@ -47,11 +47,13 @@ def _find_tag_with_best_format(link_tags: list[Tag]) -> tuple[Tag, ArticleFormat
 
 def scrape_article(
     article_url: str,
+    *,
     article_content_pattern: re.Pattern = re.compile(
         r"/article/view/[A-Za-z0-9-_.]+/[A-Za-z0-9-_.]+/?$"
     ),
+    client: ClientProtocol = SoupClient(),
 ) -> BaseArticle:
-    article_soup = soupify(article_url)
+    article_soup = client.get(article_url)
     raw_metadata = _extract_metadata(article_soup)
 
     link_tags = cast(

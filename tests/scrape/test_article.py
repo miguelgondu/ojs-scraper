@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 
 from ojs_scraper.models.article import ArticleFormat, BaseArticle
 from ojs_scraper.scrape.article import scrape_article
+from tests.helpers.mocks import MockWithHTMLClient
 
 DEFAULT_TEST_ARTICLE_URL = "test.url/journal/article/view/article123"
 
@@ -24,7 +25,9 @@ def test_scrape_article_select_only_tags_with_valid_href() -> None:
         <a href="" incorrect>PDF</a>
         <a href="/wrong/pattern/" incorrect>PDF</a>
     """
-    result_article = scrape_article_with_mock_soupify(minimal_html)
+    result_article = scrape_article(
+        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
+    )
     assert result_article.format == ArticleFormat.PDF
 
 
@@ -40,7 +43,9 @@ def test_scrape_article_correct_metadata() -> None:
             <a href="{DEFAULT_TEST_ARTICLE_URL}/file123">PDF</a>
         </body>
     """
-    result_article = scrape_article_with_mock_soupify(minimal_html)
+    result_article = scrape_article(
+        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
+    )
 
     assert result_article.raw_metadata == {
         "DC.Source": "Test Journal",
@@ -78,14 +83,18 @@ def test_scrape_article_correct_metadata() -> None:
 def test_scrape_article_with_best_format(
     minimal_html: str, expected_format: ArticleFormat
 ) -> None:
-    result_article = scrape_article_with_mock_soupify(minimal_html)
+    result_article = scrape_article(
+        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
+    )
     assert result_article.format == expected_format
 
 
 def test_scrape_article_raise_error_if_no_format_found() -> None:
     minimal_html = '<a href="/article/view/123/article123/">Invalid Format</a>'
     with pytest.raises(ValueError):
-        scrape_article_with_mock_soupify(minimal_html)
+        scrape_article(
+            DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
+        )
 
 
 def test_scrape_article_with_dc_source_metadata():
@@ -103,7 +112,9 @@ def test_scrape_article_with_dc_source_metadata():
         </body>
     </html>
     """
-    result_article = scrape_article_with_mock_soupify(minimal_html)
+    result_article = scrape_article(
+        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
+    )
     assert isinstance(result_article, BaseArticle)
     assert result_article.journal == "Test Journal"
     assert result_article.url == DEFAULT_TEST_ARTICLE_URL
@@ -125,7 +136,9 @@ def test_scrape_article_with_citation_journal_metadata():
         </body>
     </html>
     """
-    result_article = scrape_article_with_mock_soupify(minimal_html)
+    result_article = scrape_article(
+        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
+    )
 
     assert isinstance(result_article, BaseArticle)
     assert result_article.journal == "Test Journal - Fallback Meta Tag"
