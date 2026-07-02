@@ -1,9 +1,7 @@
-from unittest.mock import patch
-
 import pytest
-from bs4 import BeautifulSoup
 
 from ojs_scraper.scrape.archive import scrape_archive
+from tests.helpers.mocks import MockWithHTMLClient
 
 
 @pytest.mark.parametrize(
@@ -69,7 +67,5 @@ from ojs_scraper.scrape.archive import scrape_archive
 def test_scrape_archive_pages(
     archive_pages: list[str], expected_links: list[str]
 ) -> None:
-    soups = [BeautifulSoup(page, features="lxml") for page in archive_pages]
-    with patch("ojs_scraper.scrape.archive.soupify", side_effect=soups):
-        results = scrape_archive("test.url")
-        assert results.sort() == expected_links.sort()
+    results = scrape_archive("test.url", client=MockWithHTMLClient(archive_pages))
+    assert results.sort() == expected_links.sort()

@@ -1,107 +1,31 @@
 import logging
-from pathlib import Path
-from urllib.error import URLError
-from urllib.parse import urlparse, urlunparse
-from urllib.robotparser import RobotFileParser
-from warnings import filterwarnings
+from collections.abc import Iterator
 
-import yaml
-
-from ojs_scraper.models.urls import OJSArchiveConfig
-from ojs_scraper.protocols.registry import RegistryProtocol
+from ojs_scraper.clients import ClientProtocol, SoupClient
+from ojs_scraper.models.article import BaseArticle
 from ojs_scraper.scrape.archive import scrape_archive
 from ojs_scraper.scrape.article import scrape_article
 from ojs_scraper.scrape.issue import scrape_issue
 
-# Headers for requests
-DEFAULT_HEADERS = {
-    "User-Agent": "LatinAmericanPhilosophyMiningBot/1.0 (jloaiza@uahurtado.cl, "
-    "miguelgondu@gmail.com, nicolas.duque@ucaldas.edu.co)",
-}
-
 logger = logging.getLogger(__name__)
 
-# Ignore SSL warnings
-filterwarnings("ignore", message="Unverified HTTPS request is being made to host")
 
+def scrape(
+    archive_url: str,
+    *,
+    delay: int | None = None,
+    headers: dict[str, str] | None = None,
+    client: ClientProtocol | None = None,
+) -> Iterator[BaseArticle]:
+    logger.info("Scraping from: %s", archive_url)
 
-class Scraper:
-    def __init__(
-        self,
-        archive_config: OJSArchiveConfig,
-        registry: RegistryProtocol,
-        headers: dict = DEFAULT_HEADERS,
-    ):
-        """Scraper for OJS archives.
+    client = client or SoupClient(headers=headers, delay=delay)
 
-        In initialization, we get all the archive URLs by
-        following "next" until we reach the end of the archive.
+    issue_links = scrape_archive(archive_url, client=client)
+    for issue_link in issue_links:
+        logger.info("Finding all article links in %s", issue_link)
+        article_links = scrape_issue(issue_link, client=client)
 
-        """
-        self.archive_urls = []
-        self.headers = headers
-        self.registry = registry
-
-        self.archive_config = archive_config
-        self.delay = self.compute_delay_from_robots()
-
-    @classmethod
-    def from_yaml(
-        cls,
-        yaml_path: Path,
-        registry: RegistryProtocol,
-        headers: dict = DEFAULT_HEADERS,
-    ) -> "Scraper":
-        with yaml_path.open() as fp:
-            res = yaml.safe_load(fp)
-
-        archive_config = OJSArchiveConfig.model_validate(res)
-
-        return cls(archive_config, registry, headers)
-
-    def compute_delay_from_robots(self) -> int:
-        """Computes the delay from the robots.txt file of the archive URL."""
-        # Parse the URL to extract the root domain
-        parsed_url = urlparse(self.archive_config.archive_url)
-        robots_url = urlunparse(
-            (
-                "https",
-                parsed_url.netloc,
-                "robots.txt",
-                "",
-                "",
-                "",
-            )
-        )
-
-        try:
-            robot_parser = RobotFileParser(robots_url)
-            robot_parser.read()
-        except URLError:
-            robot_parser = RobotFileParser(robots_url.replace("https", "http"))
-            robot_parser.read()
-
-        # Default to 5 seconds if not specified
-        crawl_delay = int(robot_parser.crawl_delay("*") or 5)
-        logger.info("Scraping with a delay of %s", crawl_delay)
-
-        return crawl_delay
-
-    def scrape(self) -> None:
-        # TODO(miguel): change the names for a_tag_for_issue...
-
-        logger.info(
-            "Scraping using the following configuration: %s",
-            self.archive_config,
-        )
-
-        issue_links = scrape_archive(self.archive_config.archive_url)
-        for issue_link in issue_links:
-            logger.info("Finding all article links in %s", issue_link)
-            article_links = scrape_issue(issue_link)
-
-            for article_link in article_links:
-                logger.info("Scraping article from %s", issue_link)
-                art = scrape_article(article_link)
-                logger.info("Scraped article %s from journal %s", art.url, art.journal)
-                self.registry.create_article(art)
+        for article_link in article_links:
+            logger.info("Scraping article from %s", issue_link)
+            yield scrape_article(article_link, client=client)
