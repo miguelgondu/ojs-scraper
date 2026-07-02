@@ -10,12 +10,12 @@ authors:
   orcid: "https://orcid.org/0009-0003-9803-3205"
 - family-names: "Duque-Buitrago"
   given-names: "Nicolás"
-  orcid: "https://orcid.org/0000-0001-7479-1472" 
+  orcid: "https://orcid.org/0000-0001-7479-1472"
 - family-names: "Loaiza"
   given-names: "Juan R."
   orcid: "https://orcid.org/0000-0003-0570-3832"
 
 title: "OJS Scraper"
 version: 0.1.0
-date-released: 2026-xx-xx
+date-released: 2026-07-02
 url: "https://github.com/miguelgondu/ojs-scraper"
