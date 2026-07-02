@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+
+authors:
+- family-names: "González Duque"
+  given-names: "Miguel"
+- family-names: "Acosta"
+  given-names: "Dana"
+- family-names: "Duque"
+  given-names: "Nicolás"
+- family-names: "Loaiza"
+  given-names: "Juan R."
+  orcid: "https://orcid.org/0000-0003-0570-3832"
+
+title: "OJS Scraper"
+version: 0.1.0
+date-released: 2026-xx-xx
+url: "https://github.com/miguelgondu/ojs-scraper"
