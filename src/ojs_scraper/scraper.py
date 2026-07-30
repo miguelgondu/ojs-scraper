@@ -2,7 +2,7 @@ import logging
 from collections.abc import Iterator
 
 from ojs_scraper.clients import ClientProtocol, SoupClient
-from ojs_scraper.models.article import BaseArticle
+from ojs_scraper.models.article import Article
 from ojs_scraper.scrape.archive import scrape_archive
 from ojs_scraper.scrape.article import scrape_article
 from ojs_scraper.scrape.issue import scrape_issue
@@ -16,7 +16,7 @@ def scrape(
     delay: int | None = None,
     headers: dict[str, str] | None = None,
     client: ClientProtocol | None = None,
-) -> Iterator[BaseArticle]:
+) -> Iterator[Article]:
     logger.info("Scraping from: %s", archive_url)
 
     client = client or SoupClient(headers=headers, delay=delay)

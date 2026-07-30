@@ -5,7 +5,7 @@ from typing import cast
 from bs4 import BeautifulSoup, Tag
 
 from ojs_scraper.clients import ClientProtocol, SoupClient
-from ojs_scraper.models.article import ArticleFormat, BaseArticle
+from ojs_scraper.models.article import Article, ArticleFormat
 
 PREFERENCE_ORDER = ["xml", "html", "pdf"]
 
@@ -53,7 +53,7 @@ def scrape_article(
         r"/article/view/[A-Za-z0-9-_.]+/[A-Za-z0-9-_.]+/?$"
     ),
     client: ClientProtocol = SoupClient(),
-) -> BaseArticle:
+) -> Article:
     article_soup = client.get(article_url)
     raw_metadata = _extract_metadata(article_soup)
 
@@ -66,7 +66,7 @@ def scrape_article(
 
     link_to_raw_file = article_tag["href"]
 
-    return BaseArticle(
+    return Article(
         created_at=datetime.now(),
         journal=raw_metadata.get("DC.Source", None)
         or raw_metadata.get("citation_journal_title", ""),

@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from bs4 import BeautifulSoup
 
-from ojs_scraper.models.article import ArticleFormat, BaseArticle
+from ojs_scraper.models.article import Article, ArticleFormat
 from ojs_scraper.scrape.article import scrape_article
 from tests.helpers.mocks import MockWithHTMLClient
 
@@ -115,7 +115,7 @@ def test_scrape_article_with_dc_source_metadata():
     result_article = scrape_article(
         DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
     )
-    assert isinstance(result_article, BaseArticle)
+    assert isinstance(result_article, Article)
     assert result_article.journal == "Test Journal"
     assert result_article.url == DEFAULT_TEST_ARTICLE_URL
     assert result_article.format == ArticleFormat.PDF
@@ -140,7 +140,7 @@ def test_scrape_article_with_citation_journal_metadata():
         DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
     )
 
-    assert isinstance(result_article, BaseArticle)
+    assert isinstance(result_article, Article)
     assert result_article.journal == "Test Journal - Fallback Meta Tag"
     assert result_article.url == DEFAULT_TEST_ARTICLE_URL
     assert result_article.format == ArticleFormat.PDF
