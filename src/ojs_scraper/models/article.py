@@ -17,7 +17,7 @@ class ArticleFormat(StrEnum):
         return self.value
 
 
-class BaseArticle(BaseModel):
+class Article(BaseModel):
     created_at: datetime
     journal: str
     url: str
