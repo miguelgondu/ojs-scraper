@@ -5,7 +5,7 @@ description = "A scraper for OJS journals."
 readme = "README.md"
 authors = [
     { name = "Miguel González Duque", email = "miguelgondu@gmail.com" },
-    { name = "Juan Raúl Loaiza", email = "juanrloaiza@gmail.com" },
+    { name = "Juan Raúl Loaiza", email = "jloaiza@uahurtado.cl" },
     { name = "Dana Acosta", email = "danaacosta9@gmail.com" },
     { name = "Nicolás Duque Buitrago", email = "nicolas.duque@ucaldas.edu.co" }
 ]
