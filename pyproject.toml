@@ -1,10 +1,13 @@
 [project]
 name = "ojs_scraper"
 version = "0.1.0"
-description = "Add your description here"
+description = "A scraper for OJS journals."
 readme = "README.md"
 authors = [
-    { name = "Miguel González Duque", email = "miguelgondu@gmail.com" }
+    { name = "Miguel González Duque", email = "miguelgondu@gmail.com" },
+    { name = "Juan Raúl Loaiza", email = "juanrloaiza@gmail.com" },
+    { name = "Dana Acosta", email = "danaacosta9@gmail.com" },
+    { name = "Nicolás Duque Buitrago", email = "nicolas.duque@ucaldas.edu.co" }
 ]
 requires-python = ">=3.11"
 dependencies = [
