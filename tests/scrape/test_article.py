@@ -11,6 +11,7 @@ from ojs_scraper.scrape.article import scrape_article
 from tests.helpers.mocks import MockWithHTMLClient
 
 DEFAULT_TEST_ARTICLE_URL = "test.url/journal/article/view/article123"
+DEFAULT_DOWNLOAD_ARTICLE_URL = "test.url/journal/article/download/article123"
 
 
 def scrape_article_with_mock_soupify(minimal_html: str):
@@ -25,10 +26,13 @@ def test_scrape_article_select_only_tags_with_valid_href() -> None:
         <a href="" incorrect>PDF</a>
         <a href="/wrong/pattern/" incorrect>PDF</a>
     """
+    file_html = """
+        <a href="/article/download/123/article123/">PDF</a>
+    """
     result_article = scrape_article(
-        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
+        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient([minimal_html, file_html])
     )
-    assert result_article.format == ArticleFormat.PDF
+    assert result_article.formats == {ArticleFormat.PDF}
 
 
 def test_scrape_article_correct_metadata() -> None:
@@ -43,8 +47,11 @@ def test_scrape_article_correct_metadata() -> None:
             <a href="{DEFAULT_TEST_ARTICLE_URL}/file123">PDF</a>
         </body>
     """
+    file_html = f"""
+        <a href="{DEFAULT_DOWNLOAD_ARTICLE_URL}/file123">PDF</a>
+    """
     result_article = scrape_article(
-        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
+        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient([minimal_html, file_html])
     )
 
     assert result_article.raw_metadata == {
@@ -55,38 +62,49 @@ def test_scrape_article_correct_metadata() -> None:
 
 
 @pytest.mark.parametrize(
-    ("minimal_html", "expected_format"),
+    ("minimal_html", "file_htmls", "expected_formats"),
     [
         (
             """
-        <a href="/article/view/123/article123/">PDF</a>
-        <a href="/article/view/123/article456/">HTML</a>
-        <a href="/article/view/123/article789/">XML</a>
-        """,
-            ArticleFormat.XML,
+            <a href="/article/view/123/article123/">PDF</a>
+            <a href="/article/view/123/article456/">HTML</a>
+            <a href="/article/view/123/article789/">XML</a>
+            """,
+            (
+                '<a href="/article/download/123/article123/">Download PDF here</a>',
+                '<a href="/article/download/123/article456/">Download HTML here</a>',
+                '<a href="/article/download/123/article789/">Download XML here</a>',
+            ),
+            {ArticleFormat.XML, ArticleFormat.PDF, ArticleFormat.HTML},
         ),
         (
             """
-        <a href="/article/view/123/article123/">PDF</a>
-        <a href="/article/view/123/article456/">HTML</a>
-        """,
-            ArticleFormat.HTML,
+            <a href="/article/view/123/article123/">PDF</a>
+            <a href="/article/view/123/article456/">HTML</a>
+            """,
+            (
+                '<a href="/article/download/123/article123/">Download PDF here</a>',
+                '<a href="/article/download/123/article456/">Download HTML here</a>',
+            ),
+            {ArticleFormat.HTML, ArticleFormat.PDF},
         ),
         (
             """
-        <a href="/article/view/123/article123/">PDF</a>
-        """,
-            ArticleFormat.PDF,
+            <a href="/article/view/123/article123/">PDF</a>
+            """,
+            ('<a href="/article/download/123/article123/">Download PDF here</a>',),
+            {ArticleFormat.PDF},
         ),
     ],
 )
-def test_scrape_article_with_best_format(
-    minimal_html: str, expected_format: ArticleFormat
+def test_scrape_article_with_more_than_one_format(
+    minimal_html: str, file_htmls: tuple[str], expected_formats: ArticleFormat
 ) -> None:
     result_article = scrape_article(
-        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
+        DEFAULT_TEST_ARTICLE_URL,
+        client=MockWithHTMLClient([minimal_html] + list(file_htmls)),
     )
-    assert result_article.format == expected_format
+    assert result_article.formats == expected_formats
 
 
 def test_scrape_article_raise_error_if_no_format_found() -> None:
@@ -112,14 +130,23 @@ def test_scrape_article_with_dc_source_metadata():
         </body>
     </html>
     """
+
+    download_url = f"{DEFAULT_DOWNLOAD_ARTICLE_URL}/file123"
+    file_html = f"""
+    <html>
+        <body>
+            <a href="{download_url}">Download PDF here.</a>
+        </body>
+    </html>
+    """
     result_article = scrape_article(
-        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
+        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient([minimal_html, file_html])
     )
     assert isinstance(result_article, Article)
     assert result_article.journal == "Test Journal"
     assert result_article.url == DEFAULT_TEST_ARTICLE_URL
-    assert result_article.format == ArticleFormat.PDF
-    assert result_article.url_to_raw_file == raw_file_url
+    assert result_article.formats == {ArticleFormat.PDF}
+    assert result_article.url_to_raw_files == {"pdf": download_url}
 
 
 def test_scrape_article_with_citation_journal_metadata():
@@ -136,12 +163,16 @@ def test_scrape_article_with_citation_journal_metadata():
         </body>
     </html>
     """
+    download_url = f"{DEFAULT_DOWNLOAD_ARTICLE_URL}/file123"
+    file_html = f"""
+        <a href="{download_url}">Download PDF here</a>
+    """
     result_article = scrape_article(
-        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient(minimal_html)
+        DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient([minimal_html, file_html])
     )
 
     assert isinstance(result_article, Article)
     assert result_article.journal == "Test Journal - Fallback Meta Tag"
     assert result_article.url == DEFAULT_TEST_ARTICLE_URL
-    assert result_article.format == ArticleFormat.PDF
-    assert result_article.url_to_raw_file == raw_file_url
+    assert result_article.formats == {ArticleFormat.PDF}
+    assert result_article.url_to_raw_files == {"pdf": download_url}

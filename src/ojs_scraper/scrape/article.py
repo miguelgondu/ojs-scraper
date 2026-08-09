@@ -73,6 +73,12 @@ def scrape_article(
 
         url_to_raw_files[format] = download_links[0]
 
+    if len(url_to_raw_files) < 1:
+        raise ValueError(
+            "Could not find a link to any of the formats "
+            f"({', '.join(ArticleFormat._member_names_)})."
+        )
+
     return Article(
         created_at=datetime.now(),
         journal=raw_metadata.get("DC.Source", None)
@@ -80,6 +86,6 @@ def scrape_article(
         url=article_url,
         parsed=False,
         raw_metadata=raw_metadata,
-        formats=list(url_to_raw_files.keys()),
+        formats=set(url_to_raw_files.keys()),
         url_to_raw_files=url_to_raw_files,
     )

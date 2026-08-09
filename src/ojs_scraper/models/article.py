@@ -29,7 +29,7 @@ class Article(BaseModel):
     url: str
     parsed: bool
     raw_metadata: ArticleRawMetadata = Field(repr=False)
-    formats: list[ArticleFormat]
+    formats: set[ArticleFormat]
     url_to_raw_files: dict[str, str]
 
     def __str__(self) -> str:
