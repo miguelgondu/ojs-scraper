@@ -20,30 +20,29 @@ def _extract_metadata(article_soup: BeautifulSoup) -> dict[str, str]:
     return metadata
 
 
-def _find_tag_with_best_format(link_tags: list[Tag]) -> tuple[Tag, ArticleFormat]:
-    article_tag = None
-    article_format = None
-    for format_ in PREFERENCE_ORDER:
+def _find_tag_and_formats(link_tags: list[Tag]) -> dict[ArticleFormat, Tag]:
+    format_to_tag = {}
+    for format_ in ArticleFormat:
         candidate_tags = [
             tag for tag in link_tags if format_ in tag.get_text(strip=True).lower()
         ]
-
         if len(candidate_tags) > 0:
-            # We found a link with the desired format.
-            # We can return the article object.
-            article_tag = candidate_tags[0]
-            article_format = format_
-            break
-    else:
-        raise ValueError(
-            f"None of the preferred formats {PREFERENCE_ORDER} found in article "
-            f"links. {[tag.get_text(strip=True) for tag in link_tags]}"
-        )
+            format_to_tag[format_] = candidate_tags[0]
 
-    if "href" not in article_tag.attrs:
-        article_tag = article_tag.find("a")
+    return format_to_tag
 
-    return cast("Tag", article_tag), ArticleFormat(article_format.lower())
+
+def _find_download_links(soup: BeautifulSoup) -> list[str]:
+    a_download_links = [
+        cast("str", a.get("href"))
+        for a in soup.find_all("a", href=re.compile(r"/article/download/.+"))
+    ]
+    iframe_download_links = [
+        cast("str", iframe.get("src")).strip()
+        for iframe in soup.find_all("iframe", src=re.compile(r"/article/download/.+"))
+    ]
+
+    return a_download_links if len(a_download_links) > 0 else iframe_download_links
 
 
 def scrape_article(
@@ -62,9 +61,17 @@ def scrape_article(
         article_soup.find_all("a", href=article_content_pattern),  # type: ignore
     )
 
-    article_tag, article_format = _find_tag_with_best_format(link_tags)
+    url_to_raw_files = {}
+    for format, article_tag in _find_tag_and_formats(link_tags).items():
+        link_to_file = cast("str", article_tag["href"])
+        download_links = _find_download_links(client.get(link_to_file))
 
-    link_to_raw_file = article_tag["href"]
+        if len(download_links) < 1:
+            raise ValueError(
+                f"Could not find a download link for {format.value} in {link_to_file}"
+            )
+
+        url_to_raw_files[format] = download_links[0]
 
     return Article(
         created_at=datetime.now(),
@@ -73,6 +80,6 @@ def scrape_article(
         url=article_url,
         parsed=False,
         raw_metadata=raw_metadata,
-        format=article_format,
-        url_to_raw_file=cast("str", link_to_raw_file),
+        formats=list(url_to_raw_files.keys()),
+        url_to_raw_files=url_to_raw_files,
     )
