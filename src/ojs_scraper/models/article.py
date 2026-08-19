@@ -54,12 +54,13 @@ class Article(BaseModel):
         with (path / f"{self.name}.{format.value}").open("wb") as fp:
             fp.write(res.content)
 
-    def download(self, path: Path, format: ArticleFormat | None = None) -> None:
+    def download(self, path: Path | str, format: ArticleFormat | None = None) -> None:
         """Downloads available raw files into the specificed path.
 
         Passing None as format means downloading _all_ available formats. If
         a format is passed, only that format is downloaded.
         """
+        path = Path(path)
         formats_to_download = [format] if format is not None else self.formats
 
         for format_ in formats_to_download:
