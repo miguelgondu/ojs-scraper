@@ -84,7 +84,6 @@ def scrape_article(
         journal=raw_metadata.get("DC.Source", None)
         or raw_metadata.get("citation_journal_title", ""),
         url=article_url,
-        parsed=False,
         raw_metadata=raw_metadata,
         formats=set(url_to_raw_files.keys()),
         url_to_raw_files=url_to_raw_files,
