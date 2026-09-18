@@ -1,9 +1,11 @@
+from pydantic.dataclasses import dataclass
+
 ArticleRawMetadata = list[tuple[str, str]]
 
 
+@dataclass
 class Metadata:
-    def __init__(self, raw_metadata: ArticleRawMetadata):
-        self.raw_metadata = raw_metadata
+    raw_metadata: ArticleRawMetadata
 
     def raw(self) -> ArticleRawMetadata:
         return self.raw_metadata
