@@ -27,7 +27,6 @@ class Article(BaseModel):
     created_at: datetime
     journal: str
     url: str
-    parsed: bool
     raw_metadata: ArticleRawMetadata = Field(repr=False)
     formats: set[ArticleFormat]
     url_to_raw_files: dict[str, str]
