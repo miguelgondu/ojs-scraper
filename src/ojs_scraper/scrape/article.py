@@ -77,10 +77,13 @@ def scrape_article(
 
     metadata = Metadata(raw_metadata)
 
+    journal_from_metadata = metadata.to_dict().get(
+        "DC.Source", None
+    ) or metadata.to_dict().get("citation_journal_title", [""])
+
     return Article(
         created_at=datetime.now(),
-        journal=cast("str", metadata.to_dict().get("DC.Source", None))
-        or cast("str", metadata.to_dict().get("citation_journal_title", "")),
+        journal=cast("str", journal_from_metadata[0]),
         url=article_url,
         metadata=metadata,
         formats=set(url_to_raw_files.keys()),

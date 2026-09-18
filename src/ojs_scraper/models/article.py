@@ -4,7 +4,7 @@ from enum import StrEnum
 from pathlib import Path
 
 import requests
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from ojs_scraper.models.metadata import Metadata
 
@@ -24,6 +24,7 @@ class ArticleFormat(StrEnum):
 
 
 class Article(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     created_at: datetime
     journal: str
     url: str
