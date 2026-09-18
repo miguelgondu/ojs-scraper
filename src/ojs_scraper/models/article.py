@@ -6,7 +6,7 @@ from pathlib import Path
 import requests
 from pydantic import BaseModel, Field
 
-ArticleRawMetadata = dict[str, str]
+ArticleRawMetadata = list[tuple[str, str]]
 
 
 class ArticleFormat(StrEnum):
