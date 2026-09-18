@@ -5,7 +5,7 @@ from typing import cast
 from bs4 import BeautifulSoup, Tag
 
 from ojs_scraper.clients import ClientProtocol, SoupClient
-from ojs_scraper.models.article import Article, ArticleFormat
+from ojs_scraper.models.article import Article, ArticleFormat, Metadata
 
 PREFERENCE_ORDER = ["xml", "html", "pdf"]
 
@@ -75,12 +75,14 @@ def scrape_article(
             f"({', '.join(ArticleFormat._member_names_)})."
         )
 
+    metadata = Metadata(raw_metadata)
+
     return Article(
         created_at=datetime.now(),
-        journal=raw_metadata.get("DC.Source", None)
-        or raw_metadata.get("citation_journal_title", ""),
+        journal=cast("str", metadata.to_dict().get("DC.Source", None))
+        or cast("str", metadata.to_dict().get("citation_journal_title", "")),
         url=article_url,
-        raw_metadata=raw_metadata,
+        metadata=metadata,
         formats=set(url_to_raw_files.keys()),
         url_to_raw_files=url_to_raw_files,
     )

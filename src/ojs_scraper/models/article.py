@@ -6,7 +6,7 @@ from pathlib import Path
 import requests
 from pydantic import BaseModel, Field
 
-ArticleRawMetadata = list[tuple[str, str]]
+from ojs_scraper.models.metadata import Metadata
 
 
 class ArticleFormat(StrEnum):
@@ -27,7 +27,7 @@ class Article(BaseModel):
     created_at: datetime
     journal: str
     url: str
-    raw_metadata: ArticleRawMetadata = Field(repr=False)
+    metadata: Metadata = Field(repr=False)
     formats: set[ArticleFormat]
     url_to_raw_files: dict[str, str]
 
