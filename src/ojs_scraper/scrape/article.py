@@ -83,7 +83,7 @@ def scrape_article(
 
     return Article(
         created_at=datetime.now(),
-        journal=cast("str", journal_from_metadata[0]),
+        journal=journal_from_metadata[0],
         url=article_url,
         metadata=metadata,
         formats=set(url_to_raw_files.keys()),
