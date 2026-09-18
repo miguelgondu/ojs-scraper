@@ -41,6 +41,8 @@ def test_scrape_article_correct_metadata() -> None:
         <meta name="DC.Source" content="Test Journal"/>
         <meta name="citation_journal_title" content="Test Journal - Fallback Meta Tag"/>
         <meta name="DC.Title" content="Test Article Title"/>
+        <meta name="citation_keywords" content="Keyword 1"/>
+        <meta name="citation_keywords" content="Keyword 2"/>
         <meta content="Meta Tag with no name"/>
         </head>
         <body>
@@ -54,10 +56,19 @@ def test_scrape_article_correct_metadata() -> None:
         DEFAULT_TEST_ARTICLE_URL, client=MockWithHTMLClient([minimal_html, file_html])
     )
 
-    assert result_article.raw_metadata == {
-        "DC.Source": "Test Journal",
-        "citation_journal_title": "Test Journal - Fallback Meta Tag",
-        "DC.Title": "Test Article Title",
+    assert result_article.metadata.raw() == [
+        ("DC.Source", "Test Journal"),
+        ("citation_journal_title", "Test Journal - Fallback Meta Tag"),
+        ("DC.Title", "Test Article Title"),
+        ("citation_keywords", "Keyword 1"),
+        ("citation_keywords", "Keyword 2"),
+    ]
+
+    assert result_article.metadata.to_dict() == {
+        "DC.Source": ["Test Journal"],
+        "citation_journal_title": ["Test Journal - Fallback Meta Tag"],
+        "DC.Title": ["Test Article Title"],
+        "citation_keywords": ["Keyword 1", "Keyword 2"],
     }
 
 
