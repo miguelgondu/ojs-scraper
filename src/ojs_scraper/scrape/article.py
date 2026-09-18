@@ -10,14 +10,10 @@ from ojs_scraper.models.article import Article, ArticleFormat
 PREFERENCE_ORDER = ["xml", "html", "pdf"]
 
 
-def _extract_metadata(article_soup: BeautifulSoup) -> dict[str, str]:
+def _extract_metadata(article_soup: BeautifulSoup) -> list[tuple[str, str]]:
     meta = article_soup.find_all("meta", attrs={"name": True})
 
-    metadata = {}
-    for item in meta:
-        metadata[item["name"]] = item["content"]  # type: ignore
-
-    return metadata
+    return [(item["name"], item["content"]) for item in meta]  # type: ignore
 
 
 def _find_tag_and_formats(link_tags: list[Tag]) -> dict[ArticleFormat, Tag]:
