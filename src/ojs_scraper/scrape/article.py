@@ -5,12 +5,13 @@ from typing import cast
 from bs4 import BeautifulSoup, Tag
 
 from ojs_scraper.clients import ClientProtocol, SoupClient
-from ojs_scraper.models.article import Article, ArticleFormat, Metadata
+from ojs_scraper.models.article import Article, ArticleFormat
+from ojs_scraper.models.metadata import ArticleRawMetadata, Metadata
 
 PREFERENCE_ORDER = ["xml", "html", "pdf"]
 
 
-def _extract_metadata(article_soup: BeautifulSoup) -> list[tuple[str, str]]:
+def _extract_metadata(article_soup: BeautifulSoup) -> ArticleRawMetadata:
     meta = article_soup.find_all("meta", attrs={"name": True})
 
     return [(item["name"], item["content"]) for item in meta]  # type: ignore
