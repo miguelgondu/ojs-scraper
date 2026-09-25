@@ -43,6 +43,7 @@ def test_scrape_article_correct_metadata() -> None:
         <meta name="DC.Title" content="Test Article Title"/>
         <meta name="citation_keywords" content="Keyword 1"/>
         <meta name="citation_keywords" content="Keyword 2"/>
+        <meta name="key-with-no-content"/>
         <meta content="Meta Tag with no name"/>
         </head>
         <body>

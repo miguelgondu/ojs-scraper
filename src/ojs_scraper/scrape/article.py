@@ -12,7 +12,7 @@ PREFERENCE_ORDER = ["xml", "html", "pdf"]
 
 
 def _extract_metadata(article_soup: BeautifulSoup) -> ArticleRawMetadata:
-    meta = article_soup.find_all("meta", attrs={"name": True})
+    meta = article_soup.find_all("meta", attrs={"name": True, "content": True})
 
     return [(item["name"], item["content"]) for item in meta]  # type: ignore
 
