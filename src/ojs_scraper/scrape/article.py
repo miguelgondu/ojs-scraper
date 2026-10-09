@@ -29,7 +29,7 @@ def _find_tag_and_formats(link_tags: list[Tag]) -> dict[ArticleFormat, Tag]:
     return format_to_tag
 
 
-def _find_download_links(soup: BeautifulSoup) -> list[str]:
+def _find_download_links_for_pdf(soup: BeautifulSoup) -> list[str]:
     a_download_links = [
         cast("str", a.get("href"))
         for a in soup.find_all("a", href=re.compile(r"/article/download/.+"))
@@ -40,6 +40,10 @@ def _find_download_links(soup: BeautifulSoup) -> list[str]:
     ]
 
     return a_download_links if len(a_download_links) > 0 else iframe_download_links
+
+
+def _compute_download_link_for_html_and_xml(link: str) -> str:
+    return link.replace("/view/", "/download/")
 
 
 def scrape_article(
@@ -61,7 +65,11 @@ def scrape_article(
     url_to_raw_files = {}
     for format, article_tag in _find_tag_and_formats(link_tags).items():
         link_to_file = cast("str", article_tag["href"])
-        download_links = _find_download_links(client.get(link_to_file))
+
+        if format in {ArticleFormat.HTML, ArticleFormat.XML}:
+            download_links = [_compute_download_link_for_html_and_xml(link_to_file)]
+        else:
+            download_links = _find_download_links_for_pdf(client.get(link_to_file))
 
         if len(download_links) < 1:
             raise ValueError(
