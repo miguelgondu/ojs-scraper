@@ -5,6 +5,7 @@ from typing import cast
 from bs4 import BeautifulSoup, Tag
 
 from ojs_scraper.clients import ClientProtocol, SoupClient
+from ojs_scraper.exceptions import ScrapingException
 from ojs_scraper.models.article import Article, ArticleFormat
 from ojs_scraper.models.metadata import ArticleRawMetadata, Metadata
 
@@ -55,6 +56,9 @@ def scrape_article(
     client: ClientProtocol = SoupClient(),
 ) -> Article:
     article_soup = client.get(article_url)
+    if article_soup is None:
+        raise ScrapingException(f"Could not visit {article_url}.")
+
     raw_metadata = _extract_metadata(article_soup)
 
     link_tags = cast(
@@ -69,7 +73,13 @@ def scrape_article(
         if format in {ArticleFormat.HTML, ArticleFormat.XML}:
             download_links = [_compute_download_link_for_html_and_xml(link_to_file)]
         else:
-            download_links = _find_download_links_for_pdf(client.get(link_to_file))
+            soup = client.get(link_to_file)
+            if soup is None:
+                raise ScrapingException(
+                    f"Could not visit download link for pdf: {link_to_file}."
+                )
+
+            download_links = _find_download_links_for_pdf(soup)
 
         if len(download_links) < 1:
             raise ValueError(
@@ -81,7 +91,8 @@ def scrape_article(
     if len(url_to_raw_files) < 1:
         raise ValueError(
             "Could not find a link to any of the formats "
-            f"({', '.join(ArticleFormat._member_names_)})."
+            f"({', '.join(ArticleFormat._member_names_)}), article url: "
+            f"{article_url}"
         )
 
     metadata = Metadata(raw_metadata)

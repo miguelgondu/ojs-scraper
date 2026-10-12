@@ -23,6 +23,9 @@ def scrape_archive(
         current_url = f"{base_url}/{counter}"
         current_page_soup = client.get(current_url)
 
+        if current_page_soup is None:
+            break
+
         curent_issue_a_tags = current_page_soup.find_all("a", href=issue_view_pattern)
         current_issue_links = {
             cast("Link", link.get("href"))

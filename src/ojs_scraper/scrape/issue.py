@@ -3,6 +3,7 @@ import re
 from typing import cast
 
 from ojs_scraper.clients import ClientProtocol, SoupClient
+from ojs_scraper.exceptions import ScrapingException
 from ojs_scraper.utils.types import Issue, Link
 
 logger = logging.getLogger(__name__)
@@ -14,7 +15,10 @@ def scrape_issue(
     article_view_pattern: re.Pattern = re.compile(r"/article/view/[A-Za-z0-9-_.]+/?$"),
     client: ClientProtocol = SoupClient(),
 ) -> list[Link]:
-    issue: Issue = client.get(issue_url)
+    issue: Issue | None = client.get(issue_url)
+    if issue is None:
+        raise ScrapingException(f"Could not visit issue {issue_url}")
+
     all_article_a_tags = issue.find_all("a", href=article_view_pattern)
 
     return list(

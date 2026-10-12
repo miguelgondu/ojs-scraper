@@ -1,0 +1,2 @@
+class ScrapingException(Exception):
+    pass
